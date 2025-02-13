@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Simple Snake Game</title>
+    <style>
+      canvas {
+        border: 1px solid #000;
+        background: #eee;
+        display: block;
+        margin: 20px auto;
+      }
+    </style>
+  </head>
+  <body>
+    <canvas id="gameCanvas" width="400" height="400"></canvas>
+    <script>
+      // Get canvas and context
+      const canvas = document.getElementById('gameCanvas');
+      const ctx = canvas.getContext('2d');
+
+      // Grid size and game settings
+      const gridSize = 20; // Each block is 20px by 20px
+      const tileCount = canvas.width / gridSize; // Assuming square canvas (20 tiles per row)
+      let gameSpeed = 150; // milliseconds per game loop update
+      let score = 0;
+      let isGameOver = false; // Flag to prevent updates after game over
+
+      // Initial snake state
+      let snake = [{ x: 10, y: 10 }];
+      let direction = { x: 0, y: 0 };
+
+      // Place the first apple
+      let apple = { x: 5, y: 5 };
+
+      // Main game loop
+      function gameLoop() {
+        if (!isGameOver) {
+          update();
+          draw();
+        }
+      }
+
+      // Update game state
+      function update() {
+        if (direction.x === 0 && direction.y === 0) return; // Prevent movement before key press
+
+        // Calculate new head position based on current direction
+        let headX = snake[0].x + direction.x;
+        let headY = snake[0].y + direction.y;
+
+        // Wrap around the board
+        if (headX < 0) headX = tileCount - 1;
+        if (headX >= tileCount) headX = 0;
+        if (headY < 0) headY = tileCount - 1;
+        if (headY >= tileCount) headY = 0;
+
+        // Check for collision with self
+        for (let i = 0; i < snake.length; i++) {
+          if (snake[i].x === headX && snake[i].y === headY) {
+            gameOver();
+            return;
+          }
+        }
+
+        // Add new head position
+        snake.unshift({ x: headX, y: headY });
+
+        // Check if apple was eaten
+        if (headX === apple.x && headY === apple.y) {
+          score++;
+          placeApple();
+        } else {
+          // Remove the tail
+          snake.pop();
+        }
+      }
+
+      // Draw everything
+      function draw() {
+        // Clear canvas
+        ctx.fillStyle = '#eee';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        // Draw snake
+        ctx.fillStyle = 'green';
+        snake.forEach(segment => {
+          ctx.fillRect(segment.x * gridSize, segment.y * gridSize, gridSize - 1, gridSize - 1);
+        });
+
+        // Draw apple
+        ctx.fillStyle = 'red';
+        ctx.fillRect(apple.x * gridSize, apple.y * gridSize, gridSize - 1, gridSize - 1);
+
+        // Draw score
+        ctx.fillStyle = 'black';
+        ctx.font = '16px Arial';
+        ctx.fillText('Score: ' + score, 10, canvas.height - 10);
+
+        if (isGameOver) {
+          ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+          ctx.fillStyle = 'white';
+          ctx.font = '24px Arial';
+          ctx.textAlign = 'center';
+          ctx.fillText('Game Over! Score: ' + score, canvas.width / 2, canvas.height / 2);
+          ctx.textAlign = 'left'; // Reset text alignment
+        }
+      }
+
+      // Game over function
+      function gameOver() {
+        isGameOver = true;
+        clearInterval(gameInterval);
+        alert('Game Over! Final Score: ' + score);
+
+        // Option to restart game
+        let restart = confirm("Do you want to restart?");
+        if (restart) {
+          resetGame();
+        }
+
+      }
+
+      // Reset game state
+      function resetGame() {
+        isGameOver = false;
+        snake = [{ x: 10, y: 10 }];
+        direction = { x: 0, y: 0 };
+        score = 0;
+        placeApple();
+        gameInterval = setInterval(gameLoop, gameSpeed); // Restart the game loop
+      }
+
+      // Randomly place the apple
+      function placeApple() {
+        apple.x = Math.floor(Math.random() * tileCount);
+        apple.y = Math.floor(Math.random() * tileCount);
+
+        // Ensure apple doesn't appear on the snake
+        for (let i = 0; i < snake.length; i++) {
+          if (snake[i].x === apple.x && snake[i].y === apple.y) {
+            return placeApple();
+          }
+        }
+      }
+
+      // Listen for arrow key presses
+      document.addEventListener('keydown', function (e) {
+        switch (e.keyCode) {
+          case 37: // Left arrow
+            if (direction.x !== 1) direction = { x: -1, y: 0 };
+            break;
+          case 38: // Up arrow
+            if (direction.y !== 1) direction = { x: 0, y: -1 };
+            break;
+          case 39: // Right arrow
+            if (direction.x !== -1) direction = { x: 1, y: 0 };
+            break;
+          case 40: // Down arrow
+            if (direction.y !== -1) direction = { x: 0, y: 1 };
+            break;
+        }
+      });
+
+      // Start the game loop
+      let gameInterval = setInterval(gameLoop, gameSpeed);
+    </script>
+  </body>
+</html>
