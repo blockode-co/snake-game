@@ -2,6 +2,8 @@
 
 This is a simple implementation of the classic Snake game using HTML5 Canvas and JavaScript.
 
+![FireShot Capture 049 - Simple Snake Game - ](https://github.com/user-attachments/assets/469cb061-2405-4148-9ec0-3e04dcd37658)
+
 ## How to Play
 
 1.  Save the `index.html` file to your computer.
